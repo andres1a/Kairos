@@ -7,7 +7,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image, ExifTags
 import PIL.ExifTags
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import json
 from datetime import datetime
 import base64
@@ -26,7 +26,7 @@ from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
 
 # Cargar variables de entorno
-load_dotenv()
+
 
 # ============================================================================
 # SVG ICONS DE LUCIDE
@@ -293,19 +293,55 @@ def open_pdf_new_tab(pdf_bytes, filename="reporte_kairos.pdf"):
 def validar_configuracion():
     """Valida que la configuración esté correcta y obtiene la API key de forma segura"""
     try:
-        # Obtener API key desde variable de entorno
-        api_key = os.getenv('GEMINI_API_KEY')
+        # MÉTODO 1: Intentar obtener desde Streamlit Secrets (PRODUCCIÓN)
+        if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
+            api_key = st.secrets['GEMINI_API_KEY']
+            if api_key and api_key.strip() != '':
+                return api_key
         
-        # Validar que exista
-        if not api_key or api_key.strip() == '':
-            st.error(" Error de Configuración: API key no encontrada en .env")
-            st.info(" Asegúrate de crear el archivo .env con: GEMINI_API_KEY=tu_clave_aqui")
-            st.stop()
+        # MÉTODO 2: Intentar obtener desde variables de entorno (LOCAL)
+        api_key = os.getenv('GEMINI_API_KEY')
+        if api_key and api_key.strip() != '':
+            return api_key
+        
+        # Si no se encuentra en ningún lugar, mostrar error detallado
+        st.error("🔑 Error de Configuración: API key no encontrada")
+        
+        # Detectar si estamos en Streamlit Cloud o local
+        is_cloud = os.path.exists('/mount/src')  # Streamlit Cloud usa /mount/src
+        
+        if is_cloud:
+            st.info("""
+            📌 **Configuración en Streamlit Cloud:**
             
-        return api_key
+            1. Ve a tu app en https://share.streamlit.io/
+            2. Haz clic en **Settings** (⚙️)
+            3. Ve a **Secrets**
+            4. Agrega esto:
+            ```
+            GEMINI_API_KEY = "tu_clave_api_aqui"
+            ```
+            5. Guarda y reinicia la app
+            """)
+        else:
+            st.info("""
+            📌 **Configuración Local:**
+            
+            Crea un archivo `.streamlit/secrets.toml` en tu proyecto con:
+            ```
+            GEMINI_API_KEY = "tu_clave_api_aqui"
+            ```
+            
+            O crea un archivo `.env` con:
+            ```
+            GEMINI_API_KEY=tu_clave_api_aqui
+            ```
+            """)
+        
+        st.stop()
         
     except Exception as e:
-        st.error(f" Error de Configuración: {str(e)}")
+        st.error(f"❌ Error de Configuración: {str(e)}")
         st.stop()
 
 
