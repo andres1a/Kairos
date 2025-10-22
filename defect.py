@@ -266,7 +266,7 @@ def corregir_orientacion_imagen(imagen):
             # Si la imagen es más ancha que alta, probablemente esté rotada
             if width > height:
                 # Rotar 90 grados en sentido horario para enderezarla
-                imagen = imagen.rotate(-90, expand=True)
+                imagen = imagen.rotate(90, expand=True)
             
             return imagen
         except Exception:
