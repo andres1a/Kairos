@@ -371,7 +371,7 @@ def detectar_elemento_automatico(imagen):
     
     try:
         # Crear modelo y generar contenido
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash-lite')
         respuesta = model.generate_content([prompt_deteccion, imagen])
         
         if respuesta and respuesta.text:
@@ -972,7 +972,7 @@ def realizar_analisis(imagen, nombre_archivo, tipo_elemento):
     try:
         with st.spinner(f'🔄 Analizando {tipo_elemento.lower()} con IA especializada...'):
             # Inicializar modelo
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-2.0-flash-lite')
             
             # Obtener prompt especializado
             prompt = obtener_prompt_especializado(tipo_elemento)
