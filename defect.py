@@ -371,7 +371,7 @@ def detectar_elemento_automatico(imagen):
     
     try:
         # Crear modelo y generar contenido
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         respuesta = model.generate_content([prompt_deteccion, imagen])
         
         if respuesta and respuesta.text:
