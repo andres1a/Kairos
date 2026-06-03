@@ -280,11 +280,40 @@ def main():
                     uploaded_file.size / 1024,
                     LUCIDE_ICONS["image"],
                 ),
-                height=255,
+                height=360,
                 scrolling=False,
             )
 
     if uploaded_file is not None:
+        st.markdown("---")
+
+        # Paso 1: Detección automática
+        if not st.session_state.deteccion_realizada:
+            st.markdown(f"### {LUCIDE_ICONS['bot']} Paso 1: Detección Automática", unsafe_allow_html=True)
+            _, col2, _ = st.columns([1, 2, 1])
+            with col2:
+                if st.button("🔍 Detectar Elemento Automáticamente", key="auto_detect"):
+                    with st.spinner("🤖 Analizando imagen para identificar elemento estructural..."):
+                        try:
+                            elemento_detectado, confianza, justificacion = detectar_elemento_automatico(st.session_state.imagen_cargada)
+                            st.session_state.deteccion_automatica = {
+                                "elemento": elemento_detectado,
+                                "confianza": confianza,
+                                "justificacion": justificacion,
+                            }
+                            st.session_state.deteccion_realizada = True
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error en detección: {str(e)}")
+                            st.session_state.deteccion_automatica = {
+                                "elemento": "Viga",
+                                "confianza": "Baja",
+                                "justificacion": f"Error en detección automática: {str(e)[:50]}...",
+                            }
+                            st.session_state.deteccion_realizada = True
+                            st.rerun()
+
+        # Paso 2: Confirmar o corregir detección
         if st.session_state.deteccion_realizada and st.session_state.deteccion_automatica:
             deteccion = st.session_state.deteccion_automatica
             components.html(
@@ -332,12 +361,13 @@ def main():
                     scrolling=False,
                 )
 
+    # Paso 3: Análisis estructural especializado
     if uploaded_file is not None and st.session_state.elemento_seleccionado:
         st.markdown("---")
         st.markdown(f"### {LUCIDE_ICONS['microscope']} Paso 3: Iniciar Análisis Estructural", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            if st.button("🚀 Analizar Estructura", key="analyze"):
+            if st.button("Analizar Estructura", key="analyze"):
                 realizar_analisis(st.session_state.imagen_cargada, st.session_state.nombre_archivo, st.session_state.elemento_seleccionado)
 
     if st.session_state.analisis_completado and st.session_state.resultado_analisis:
